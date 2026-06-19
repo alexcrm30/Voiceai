@@ -80,11 +80,32 @@ export default function Dashboard() {
     window.location.href = '/login';
   }
 
+  async function startCheckout(plan) {
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan })
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert('Erreur : ' + data.error);
+    } catch(e) {
+      alert('Erreur : ' + e.message);
+    }
+  }
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'agents', label: 'Agents IA' },
     { id: 'appels', label: 'Appels' },
     { id: 'parametres', label: 'Paramètres' },
+  ];
+
+  const plans = [
+    { id: 'starter', name: 'Starter', price: '49€/mois', features: '1 agent · 500 min/mois · Support email', color: '#534AB7' },
+    { id: 'pro', name: 'Pro', price: '99€/mois', features: '3 agents · 2000 min/mois · Support prioritaire', color: '#1D9E75' },
+    { id: 'enterprise', name: 'Enterprise', price: '299€/mois', features: 'Agents illimités · Minutes illimitées · Support dédié', color: '#BA7517' },
   ];
 
   return (
@@ -93,7 +114,7 @@ export default function Dashboard() {
       {/* SIDEBAR */}
       <div style={{ width: 220, background: 'white', borderRight: '1px solid #e5e5e5', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
         <div style={{ padding: '0 18px 20px', borderBottom: '1px solid #e5e5e5', marginBottom: 12 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#534AB7' }}>🎙️ VoiceAI</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#534AB7' }}>VoiceAI</div>
           <div style={{ fontSize: 11, color: '#888' }}>Assistant vocal IA</div>
         </div>
         {navItems.map(n => (
@@ -136,26 +157,24 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* BOUTON APPEL TEST */}
             <div style={{ background: 'white', borderRadius: 12, padding: 20, border: '1px solid #eee', marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>🎙️ Tester l'agent vocal</div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Tester l'agent vocal</div>
               {!callActive ? (
                 <button onClick={startCall} style={{ background: '#1D9E75', color: 'white', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
-                  📞 Démarrer un appel test
+                  Démarrer un appel test
                 </button>
               ) : (
                 <div>
                   <div style={{ background: '#F0FFF8', borderRadius: 8, padding: 12, marginBottom: 10, fontSize: 13, color: '#1D9E75' }}>
-                    🟢 Appel en cours — {transcript}
+                    Appel en cours — {transcript}
                   </div>
                   <button onClick={stopCall} style={{ background: '#FCEBEB', color: '#A32D2D', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
-                    📵 Raccrocher
+                    Raccrocher
                   </button>
                 </div>
               )}
             </div>
 
-            {/* APPELS RECENTS */}
             <div style={{ background: 'white', borderRadius: 12, border: '1px solid #eee' }}>
               <div style={{ padding: '14px 20px', borderBottom: '1px solid #eee', fontSize: 14, fontWeight: 600 }}>Appels récents</div>
               {calls.length === 0 ? (
@@ -199,7 +218,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <button onClick={startCall} style={{ width: '100%', background: '#EEEDFE', color: '#534AB7', border: 'none', borderRadius: 8, padding: '8px', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
-                    🎙️ Tester cet agent
+                    Tester cet agent
                   </button>
                 </div>
               ))}
@@ -230,46 +249,39 @@ export default function Dashboard() {
           </div>
         )}
 
-       {/* PARAMETRES */}
+        {/* PARAMETRES */}
         {page === 'parametres' && (
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 24 }}>Paramètres</h1>
+
             <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #eee', maxWidth: 500, marginBottom: 16 }}>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>Compte</div>
               <div style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>Email : {user?.email}</div>
               <div style={{ fontSize: 13, color: '#666', marginBottom: 20 }}>Plan : Starter (gratuit)</div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Clés API</div>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>Vapi : Connecté ✓</div>
-              <div style={{ fontSize: 12, color: '#888' }}>Supabase : Connecté ✓</div>
+              <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>Vapi : Connecté</div>
+              <div style={{ fontSize: 12, color: '#888' }}>Supabase : Connecté</div>
             </div>
 
             <div style={{ background: 'white', borderRadius: 12, padding: 24, border: '1px solid #eee', maxWidth: 500 }}>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Choisir un plan</div>
               <div style={{ fontSize: 12, color: '#888', marginBottom: 20 }}>Passez à un plan supérieur pour plus de minutes et d'agents</div>
-              {[
-                { id: 'starter', name: 'Starter', price: '49€/mois', features: '1 agent · 500 min/mois · Support email', color: '#534AB7' },
-                { id: 'pro', name: 'Pro', price: '99€/mois', features: '3 agents · 2000 min/mois · Support prioritaire', color: '#1D9E75' },
-                { id: 'enterprise', name: 'Enterprise', price: '299€/mois', features: 'Agents illimités · Minutes illimitées · Support dédié', color: '#BA7517' },
-              ].map(p => (
-                <div key={p.id} style={{ border: `1.5px solid ${p.color}20`, borderRadius: 10, padding: 16, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {plans.map(p => (
+                <div key={p.id} style={{ border: `1.5px solid ${p.color}33`, borderRadius: 10, padding: 16, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: p.color }}>{p.name} — {p.price}</div>
                     <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{p.features}</div>
                   </div>
-                  <button onClick={async () => {
-                    const res = await fetch('/api/create-checkout', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ plan: p.id })
-                    });
-                    const data = await res.json();
-                    if (data.url) window.location.href = data.url;
-                    else alert('Erreur : ' + data.error);
-                  }} style={{ padding: '8px 16px', background: p.color, color: 'white', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    Choisir →
+                  <button onClick={() => startCheckout(p.id)} style={{ padding: '8px 16px', background: p.color, color: 'white', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    Choisir
                   </button>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+      </div>
+    </div>
+  );
+}
