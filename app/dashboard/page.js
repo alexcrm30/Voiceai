@@ -61,23 +61,14 @@ export default function Dashboard() {
     setCalls(cl || []);
   }
 
-  async function startCall() {
+async function startCall() {
     if (!vapi || callActive) return;
     try {
-      await vapi.start('c17ac66a-d6c1-484a-89a9-b39d46697531');
+      const agentId = agents[0]?.vapi_assistant_id || 'c17ac66a-d6c1-484a-89a9-b39d46697531';
+      await vapi.start(agentId);
     } catch(e) {
       alert('Erreur : ' + e.message);
     }
-  }
-
-  function stopCall() {
-    if (vapi) { try { vapi.stop(); } catch(e) {} }
-    setCallActive(false);
-  }
-
-  async function logout() {
-    await sb.auth.signOut();
-    window.location.href = '/login';
   }
 
   async function startCheckout(plan) {
