@@ -24,7 +24,7 @@ export default function Onboarding() {
     setForm(f => ({ ...f, [key]: val }));
   }
 
-  async function finish() {
+async function finish() {
     setLoading(true);
     try {
       // Créer le compte
@@ -44,7 +44,24 @@ export default function Onboarding() {
         plan: 'starter',
       });
 
-      // Créer l'agent
+      // Créer l'agent Vapi unique pour ce client
+      const vapiRes = await fetch('/api/create-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: form.businessName,
+          businessType: form.businessType,
+          agentName: form.agentName,
+          greeting: form.greeting,
+          services: form.services,
+          mondayFriday: form.mondayFriday,
+          saturday: form.saturday,
+          sunday: form.sunday,
+        })
+      });
+      const vapiData = await vapiRes.json();
+
+      // Créer l'agent dans Supabase avec l'ID Vapi
       await sb.from('agents').insert({
         user_id: userId,
         name: form.agentName || `Agent ${form.businessName}`,
@@ -55,8 +72,9 @@ export default function Onboarding() {
         transfert: true,
         is_rdv: true,
         greeting: form.greeting || `Bonjour, vous êtes bien chez ${form.businessName}. Comment puis-je vous aider ?`,
-        template: form.template,
+        template: form.businessType,
         type: form.businessType,
+        vapi_assistant_id: vapiData.assistantId || null,
       });
 
       setStep(4);
